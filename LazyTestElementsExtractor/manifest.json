@@ -1,0 +1,25 @@
+{
+    "name": "LazyTest Elements Extractor",
+    "version": "1.0.0",
+    "manifest_version": 2,
+    "description": "Extract web elements from page and show them. Chose to generate Java code.",
+
+    "permissions": ["downloads", "contextMenus", "tabs", "<all_urls>","http://*/*", "https://*/*"],
+
+    "icons": {
+        "16": "img/icon_16.png",
+        "48": "img/icon_48.png",
+        "128": "img/icon_128.png",
+        "256": "img/icon_256.png"
+    },
+
+    "background": {
+        "page": "background.html"
+    },
+
+    "content_scripts": [ {
+      "js": [ "jquery.min.js","getWebElements.js","getSingleElement.js","bkgtrigger.js"],
+      "matches": [ "http://*/*", "https://*/*" ]
+    } ]
+
+}
