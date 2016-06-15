@@ -72,27 +72,35 @@ function getAllElements() {
 
     //获取各个iframe里的元素
     $("iframe").each(function(){
-        if (this.contentWindow.document.domain == window.document.domain) {
-            if(this.name!=null && this.name!="" && this.name!=undefined){
-                getWebElements(window.frames[this.name].document);
-                return true;
+        try {
+            if (this.contentWindow.document.domain == window.document.domain) {
+                if(this.name!=null && this.name!="" && this.name!=undefined){
+                    getWebElements(window.frames[this.name].document);
+                    return true;
+                }
+                if(this.id!=null && this.id!="" && this.id!=undefined){
+                    getWebElements(window.frames[this.id].contentDocument);
+                }
             }
-            if(this.id!=null && this.id!="" && this.id!=undefined){
-                getWebElements(window.frames[this.id].contentDocument);
-            }
+        } catch (e) {
+            return true;
         }
     });
 
     //获取各个frame里的元素
     $("frame").each(function(){
-        if (this.contentWindow.document.domain == window.document.domain) {
-            if (this.name != null && this.name != "" && this.name != undefined) {
-                getWebElements(window.frames[this.name].document);
-                return true;
+        try{
+            if (this.contentWindow.document.domain == window.document.domain) {
+                if (this.name != null && this.name != "" && this.name != undefined) {
+                    getWebElements(window.frames[this.name].document);
+                    return true;
+                }
+                if (this.id != null && this.id != "" && this.id != undefined) {
+                    getWebElements(window.frames[this.id].contentDocument);
+                }
             }
-            if (this.id != null && this.id != "" && this.id != undefined) {
-                getWebElements(window.frames[this.id].contentDocument);
-            }
+        } catch (e) {
+            return true;
         }
     });
 }
@@ -314,25 +322,33 @@ function getFrameNameByElement(e) {
     var frameName = "";
     var flag = true;
     $("iframe").each(function(){
-        if(e.ownerDocument === this.contentWindow.document) {
-            frame = this;
-            if(frame.name!=null && frame.name!="" && frame.name!=undefined){
-                frameName = frame.name;
-            }else{
-                frameName = frame.id;
+        try {
+            if (e.ownerDocument === this.contentWindow.document) {
+                frame = this;
+                if (frame.name != null && frame.name != "" && frame.name != undefined) {
+                    frameName = frame.name;
+                } else {
+                    frameName = frame.id;
+                }
+                flag = false;
             }
-            flag = false;
+        } catch (e) {
+            return true;
         }
     });
     if(flag){
         $("frame").each(function(){
-            if(frame.name!=null && frame.name!="" && frame.name!=undefined) {
-                frame = this;
-                if(frame.name!=null){
-                    frameName = frame.name;
-                }else{
-                    frameName = frame.id;
+            try {
+                if(frame.name!=null && frame.name!="" && frame.name!=undefined) {
+                    frame = this;
+                    if(frame.name!=null){
+                        frameName = frame.name;
+                    }else{
+                        frameName = frame.id;
+                    }
                 }
+            } catch (e) {
+                return true;
             }
         });
     }

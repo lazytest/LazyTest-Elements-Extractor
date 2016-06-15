@@ -220,25 +220,33 @@ if(selector.addLibs === undefined){
             var frameName = "";
             var flag = true;
             $("iframe").each(function(){
-                if(e.ownerDocument === this.contentWindow.document) {
-                    frame = this;
-                    if(frame.name!=null && frame.name!="" && frame.name!=undefined){
-                        frameName = frame.name;
-                    }else{
-                        frameName = frame.id;
-                    }
-                    flag = false;
-                }
-            });
-            if(flag){
-                $("frame").each(function(){
-                    if(frame.name!=null && frame.name!="" && frame.name!=undefined) {
+                try{
+                    if(e.ownerDocument === this.contentWindow.document) {
                         frame = this;
-                        if(frame.name!=null){
+                        if(frame.name!=null && frame.name!="" && frame.name!=undefined){
                             frameName = frame.name;
                         }else{
                             frameName = frame.id;
                         }
+                        flag = false;
+                    }
+                } catch (e) {
+                    return true;
+                }
+            });
+            if(flag){
+                $("frame").each(function(){
+                    try{
+                        if(frame.name!=null && frame.name!="" && frame.name!=undefined) {
+                            frame = this;
+                            if(frame.name!=null){
+                                frameName = frame.name;
+                            }else{
+                                frameName = frame.id;
+                            }
+                        }
+                    } catch (e) {
+                        return true;
                     }
                 });
             }
