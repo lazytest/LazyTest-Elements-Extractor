@@ -40,35 +40,44 @@ if(selector.addLibs === undefined){
 		    var id = getId(ev.target);
 		    var name = getName(ev.target);
 			var nodeName = getNode(ev.target);
+			var parentNodeName = getParentNode(ev.target);
 		    var ap = getAllXpath(ev.target);
 			
 			var xpathArray = new Array();
 			var i = 0;
 			var flag = true;
 			var tempXpath;
+			var nameFlag = false;
 			
 			if(getAttributeValue(ev.target,"id")!=-1){
 				tempXpath = "//" + nodeName + "[@id='" + id + "']";
-				xpathArray.push(tempXpath);
+
 				if(isUnique(tempXpath)==1){
 					flag =false;
+					xpathArray.push(tempXpath);
 				}
-				
 			}
 
 			if(getAttributeValue(ev.target,"name")!=-1){
 				tempXpath ="//" + nodeName + "[@name='" + name + "']";
-				xpathArray.push(tempXpath);
 				if(isUnique(tempXpath)==1){
 					flag =false;
+					xpathArray.push(tempXpath);
+				}else{
+					nameFlag =true;
 				}
 			}
 
 			tempXpath = getXpathByText(ev.target);
 			if(tempXpath!=null){
-				xpathArray.push(tempXpath);
 				if(isUnique(tempXpath)==1){
 					flag =false;
+					xpathArray.push(tempXpath);
+				}else if(nameFlag ==true){
+					tempXpath =tempXpath.replace("]","")+" and @name='" + name + "']";
+					if(isUnique(tempXpath)==1){
+						xpathArray.push(tempXpath);
+					}
 				}
 			}
 			
@@ -104,6 +113,7 @@ if(selector.addLibs === undefined){
 
             var type = "";
 
+
             if (nodeName == "input") {
                 if(ev.target.type=="text" && ev.target.readOnly){
                     type = "Calendar";
@@ -118,15 +128,17 @@ if(selector.addLibs === undefined){
                 }
             } else if (nodeName == "textarea") {
                 type = "Text";
-            } else if (nodeName == "a" || nodeName == "button") {
-                type = "Click";
-            } else if (nodeName == "select") {
+            }else if (nodeName == "select") {
                 type = "Select";
             } else if (nodeName == "table") {
                 type = "Table";
-            }
+            } else if (nodeName == "a" || nodeName == "button"|| nodeName == "span" || nodeName == "img" || nodeName == "i" || nodeName == "font"|| nodeName == "div") {
+				type = "Click";
+			}else{
+				type = "";
+			}
 
-            if (type != "") {
+			if (type != "") {
                 controlInfoArray.push(type);
 
                 var validXpathArray = new Array();
@@ -155,22 +167,26 @@ if(selector.addLibs === undefined){
 
 		$("*").each(function(){
 			if($(this).is("frame")||$(this).is("iframe")) {
-                if (this.contentWindow.document.domain == window.document.domain) {
-                    var framename = $(this)[0].name;
-                    var frameid = $(this)[0].id;
-                    var children;
+                try{
+					if (this.contentWindow.document.domain == window.document.domain) {
+						var framename = $(this)[0].name;
+						var frameid = $(this)[0].id;
+						var children;
 
-                    if (frameid != "") {
-                        children = $(window.frames[frameid].document).find("*")
-                    } else if (framename != "") {
-                        children = $(window.frames[framename].document).find("*")
-                    } else {
-                        children = $($(this)[0].contentWindow.document).find("*");
-                    }
+						if (frameid != "") {
+							children = $(window.frames[frameid].document).find("*")
+						} else if (framename != "") {
+							children = $(window.frames[framename].document).find("*")
+						} else {
+							children = $($(this)[0].contentWindow.document).find("*");
+						}
 
-                    children.keydown(keydown);
-                    all.push(children);
-                }
+						children.keydown(keydown);
+						all.push(children);
+					}
+				} catch (e) {
+					return true;
+			}
             }
 		});
 
@@ -264,6 +280,15 @@ if(selector.addLibs === undefined){
 		function getNode(e) {
 			return e.nodeName.toLowerCase(); 
 		}
+		function getParentNode(e) {
+			parentNode = e.parentNode;
+			if(parentNode!=null && parentNode!=undefined){
+				return parentNode.nodeName.toLowerCase();
+			}else{
+				return "";
+			}
+
+		}
 
 		//获取绝对路径
 		function getAllXpath(e) {
@@ -302,13 +327,13 @@ if(selector.addLibs === undefined){
 		        }else if(getAttributeValue(e,"name")!=-1){
 					xpath = "//" + node + "[@name='" + e.name + "']" + xpath;
 
-		        }else if(getAttributeValue(e,"title")!=-1){
-		        	xpath = "//" + node + "[@title='" + getAttributeValue(e,"title") + "']" + xpath;
-
 		        }else if(tempXpath!=null && isUnique(tempXpath)==1){
 		        	xpath = tempXpath + xpath;
 
-		        }else{
+		        }else if(getAttributeValue(e,"title")!=-1){
+					xpath = "//" + node + "[@title='" + getAttributeValue(e,"title") + "']" + xpath;
+
+				}else{
 		        	var indexNode = getIndexOfElement(e);
 		        	if( indexNode != null ){
 		        		xpath = "/" + indexNode + xpath;
@@ -355,15 +380,16 @@ if(selector.addLibs === undefined){
 						xpath = "//" + node + "[@name='" + getAttributeValue(children[i],"id") + "']" + xpath;
 						return xpath;
 		        	}
+					var tempXpath = getXpathByText(children[i]);
+					if(tempXpath!=null && isUnique(tempXpath)==1){
+						xpath = tempXpath + xpath;
+						return xpath;
+					}
 		        	if(getAttributeValue(children[i],"title")!=-1){
 		        		xpath = "//" + node + "[@title='" + getAttributeValue(children[i],"title") + "']" + xpath;
 		        		return xpath;
 		        	}
-		        	var tempXpath = getXpathByText(children[i]);
-		        	if(tempXpath!=null && isUnique(tempXpath)==1){
-		        		xpath = tempXpath + xpath;
-		        		return xpath;
-		        	}
+
 		        	i++;
 		    	}
 		    }
@@ -398,17 +424,18 @@ if(selector.addLibs === undefined){
 							flag = true;
 							return false;
 		        		}
+						var tempXpath = getXpathByText(e);
+						if(tempXpath!=null&& isUnique(tempXpath)==1){
+							xpath = tempXpath + xpath;
+							flag = true;
+							return false;
+						}
 		        		if(getAttributeValue(this,"title")!=-1){
 		        			xpath = "//" + childNode + "[@title='" + getAttributeValue(this,"title") + "']" + xpath;
 		        			flag = true;
 		        			return false;
 		        		}
-		        		var tempXpath = getXpathByText(e);
-		        		if(tempXpath!=null&& isUnique(tempXpath)==1){
-		        			xpath = tempXpath + xpath;
-		        			flag = true;
-		        			return false;
-		        		}
+
 		            }
 		        });
 

@@ -256,6 +256,7 @@ function getXpath(e){
     var xpathArray = new Array();
     var i = 0;
     var flag = true;
+    var nameFlag = false;
     var tempXpath;
 
     if(getAttributeValue(e,"id")!=-1){
@@ -276,9 +277,14 @@ function getXpath(e){
 
     tempXpath = getXpathByText(e);
     if(tempXpath!=null){
-        xpathArray.push(tempXpath);
         if(isUnique(tempXpath)==1){
             flag =false;
+            xpathArray.push(tempXpath);
+        }else if(nameFlag ==true){
+            tempXpath =tempXpath.replace("]","")+" and @name='" + name + "']";
+            if(isUnique(tempXpath)==1){
+                xpathArray.push(tempXpath);
+            }
         }
     }
 
@@ -388,10 +394,10 @@ function getXpathByParent(e){
             xpath = "//" + node + "[@id='" + e.id + "']" + xpath;
         }else if(getAttributeValue(e,"name")!=-1){
             xpath = "//" + node + "[@name='" + e.name + "']" + xpath;
-        }else if(getAttributeValue(e,"title")!=-1){
-            xpath = "//" + node + "[@title='" + getAttributeValue(e,"title") + "']" + xpath;
         }else if(tempXpath!=null && isUnique(tempXpath)==1){
             xpath = tempXpath + xpath;
+        }else if(getAttributeValue(e,"title")!=-1){
+            xpath = "//" + node + "[@title='" + getAttributeValue(e,"title") + "']" + xpath;
         }else{
             var indexNode = getIndexOfElement(e);
             if( indexNode != null ){
@@ -437,15 +443,16 @@ function getXpathByChlid(e){
                 xpath = "//" + node + "[@name='" + getAttributeValue(children[i],"id") + "']" + xpath;
                 return xpath;
             }
-            if(getAttributeValue(children[i],"title")!=-1){
-                xpath = "//" + node + "[@title='" + getAttributeValue(children[i],"title") + "']" + xpath;
-                return xpath;
-            }
             var tempXpath = getXpathByText(children[i]);
             if(tempXpath!=null && isUnique(tempXpath)==1){
                 xpath = tempXpath + xpath;
                 return xpath;
             }
+            if(getAttributeValue(children[i],"title")!=-1){
+                xpath = "//" + node + "[@title='" + getAttributeValue(children[i],"title") + "']" + xpath;
+                return xpath;
+            }
+
             i++;
         }
     }
@@ -479,17 +486,18 @@ function getXpathByBrother(e){
                     flag = true;
                     return false;
                 }
-                if(getAttributeValue(this,"title")!=-1){
-                    xpath = "//" + childNode + "[@title='" + getAttributeValue(this,"title") + "']" + xpath;
-                    flag = true;
-                    return false;
-                }
                 var tempXpath = getXpathByText(e);
                 if(tempXpath!=null&& isUnique(tempXpath)==1){
                     xpath = tempXpath + xpath;
                     flag = true;
                     return false;
                 }
+                if(getAttributeValue(this,"title")!=-1){
+                    xpath = "//" + childNode + "[@title='" + getAttributeValue(this,"title") + "']" + xpath;
+                    flag = true;
+                    return false;
+                }
+
             }
         });
         if (flag) {
@@ -1037,6 +1045,7 @@ var generateJavaCode = function(e) {
     var controlDescs = [];
 
     var flag = true;
+
 
     $("input[id^='checkElements']:checked").each(function () {
         if (!flag) {
